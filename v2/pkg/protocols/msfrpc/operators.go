@@ -14,13 +14,31 @@ func (r *Request) Match(data map[string]interface{}, matcher *matchers.Matcher) 
 }
 
 // Extract performs extracting operation for a extractor on model and returns true or false.
-func (r *Request) Extract(data map[string]interface{}, matcher *extractors.Extractor) map[string]struct{} {
+func (r *Request) Extract(data map[string]interface{}, extractor *extractors.Extractor) map[string]struct{} {
+	partString := extractor.Part
+	switch partString {
+	case "body", "all", "":
+		partString = "data"
+	}
+
+	item, ok := data[partString]
+	if !ok {
+		return nil
+	}
+	itemStr := types.ToString(item)
+
+	switch extractor.GetType() {
+	case extractors.RegexExtractor:
+		return extractor.ExtractRegex(itemStr)
+	case extractors.KValExtractor:
+		return extractor.ExtractKval(data)
+	}
 	return nil
 }
 
 // responseToDSLMap converts a HTTP response to a map for use in DSL matching
 func (r *Request) responseToDSLMap(host, matched string) output.InternalEvent {
-	data := make(output.InternalEvent, 6)
+	data := make(output.InternalEvent, 5)
 
 	// Some data regarding the request metadata
 	data["host"] = host

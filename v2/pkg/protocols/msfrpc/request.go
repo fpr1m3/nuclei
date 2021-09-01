@@ -56,8 +56,14 @@ func (r *Request) ExecuteWithResults(input string, metadata, previous output.Int
 	// 	outputEvent[k] = v
 	// }
 	event := &output.InternalWrappedEvent{InternalEvent: outputEvent}
-	event.OperatorsResult.Matched = true
-	event.Results = r.MakeResultEvent(event)
+	if r.CompiledOperators != nil {
+		result, ok := r.CompiledOperators.Execute(outputEvent, r.Match, r.Extract)
+		if ok && result != nil {
+			event.OperatorsResult = result
+			// event.OperatorsResult.PayloadValues = payloads
+			event.Results = r.MakeResultEvent(event)
+		}
+	}
 	// if r.CompiledOperators != nil {
 	// 	result, ok := r.CompiledOperators.Execute(outputEvent, r.Match, r.Extract)
 	// 	if ok && result != nil {
