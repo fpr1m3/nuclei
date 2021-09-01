@@ -11,6 +11,7 @@ require (
 	github.com/c4milo/unpackit v0.1.0 // indirect
 	github.com/corpix/uarand v0.1.1
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/fpr1m3/go-msf-rpc v0.0.0-20210831194623-3d46f64c4649
 	github.com/go-rod/rod v0.91.1
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-github v17.0.0+incompatible
@@ -58,6 +59,5 @@ require (
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

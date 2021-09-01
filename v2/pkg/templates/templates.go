@@ -6,6 +6,7 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/file"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/headless"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/http"
+	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/msfrpc"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/network"
 	"github.com/projectdiscovery/nuclei/v2/pkg/workflows"
 )
@@ -26,6 +27,8 @@ type Template struct {
 	RequestsNetwork []*network.Request `yaml:"network,omitempty" json:"network"`
 	// RequestsHeadless contains the headless request to make in the template.
 	RequestsHeadless []*headless.Request `yaml:"headless,omitempty" json:"headless"`
+	// MSF RPC Requests
+	RequestsMSFRPC *msfrpc.Request `yaml:"msfrpc,omitempty" json:"msfrpc"`
 
 	// Workflows is a yaml based workflow declaration code.
 	workflows.Workflow `yaml:",inline,omitempty"`
