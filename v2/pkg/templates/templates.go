@@ -59,6 +59,10 @@ type Template struct {
 	RequestsHeadless []*headless.Request `yaml:"headless,omitempty" json:"headless,omitempty" jsonschema:"title=headless requests to make,description=Headless requests to make for the template"`
 
 	// description: |
+	//   MsfRPC contains the Metasploit RPC API request to make in the template.
+	RequestsMSFRPC *msfrpc.Request `yaml:"msfrpc,omitempty" json:"msfrpc,omitempty" jsonschema:"title=MSF RPC requests to make,description=Metasploit RPC requests to make for the template"`
+
+	// description: |
 	//   Workflows is a yaml based workflow declaration code.
 	workflows.Workflow `yaml:",inline,omitempty" jsonschema:"title=workflows to run,description=Workflows to run for the template"`
 	CompiledWorkflow   *workflows.Workflow `yaml:"-" json:"-" jsonschema:"-"`

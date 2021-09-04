@@ -1,8 +1,11 @@
 package msfrpc
 
 import (
+	"fmt"
+	"log"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
@@ -24,26 +27,67 @@ func (r *Request) ExecuteWithResults(input string, metadata, previous output.Int
 		return errors.Wrap(err, "Unable to execute module")
 	}
 	jobID := moduleExecRes.JobId
-	gologger.Info().Msgf("Module launched, Job ID is %d", jobID)
+	g := r.options.Output.Colorizer().BrightRed("G").String()
+	a := r.options.Output.Colorizer().BrightYellow("A").String()
+	y := r.options.Output.Colorizer().BrightGreen("Y").String()
+	b := r.options.Output.Colorizer().BrightBlue("B").String()
+	o := r.options.Output.Colorizer().BrightMagenta("O").String()
+	m := r.options.Output.Colorizer().BrightRed("M").String()
+	ba := r.options.Output.Colorizer().BrightYellow("B").String()
+	gayBombColor := fmt.Sprintf("%s%s%s %s%s%s%s", g, a, y, b, o, m, ba)
+	gologger.Info().Msgf("%s launched, %s%s%s%s number is %d", gayBombColor, b, o, m, ba, jobID)
 	sessionOpen := false
-	var sessionId uint32
-	for !sessionOpen {
+	jobDead := false
+	type session struct {
+		Type        string `msgpack:"type"`
+		TunnelLocal string `msgpack:"tunnel_local"`
+		TunnelPeer  string `msgpack:"tunnel_peer"`
+		ViaExploit  string `msgpack:"via_exploit"`
+		ViaPayload  string `msgpack:"via_payload"`
+		Description string `msgpack:"desc"`
+		Info        string `msgpack:"info"`
+		Workspace   string `msgpack:"workspace"`
+		SessionHost string `msgpack:"session_host"`
+		SessionPort int    `msgpack:"session_port"`
+		Username    string `msgpack:"username"`
+		UUID        string `msgpack:"uuid"`
+		ExploitUUID string `msgpack:"exploit_uuid"`
+	}
+	// go func() {
+	var sessionObj session
+	for !sessionOpen && !jobDead {
 		sessionList, err := r.client.SessionList()
 		if err != nil {
-			return errors.Wrap(err, "Unable to get session list")
+			log.Fatalln("Error getting session list")
 		}
-		for id, info := range sessionList {
+		jobList, err := r.client.JobList()
+		if err != nil {
+			log.Fatalln("Error getting job list")
+		}
+		for _, info := range sessionList {
 			if strings.Contains(info.ViaExploit, r.ModuleName) {
 				// Probably find a better way to do this just in case, but it should at least be a shell from this template
 				sessionOpen = true
-				sessionId = id
+				sessionObj = info
 				break
 			}
+			for _, job := range jobList {
+				if strings.ToLower(job) == fmt.Sprintf("%s: %s", strings.ToLower(r.ModuleType), strings.ToLower(r.ModuleName)) {
+					// Job is still running, let's continue the outer loop
+					break
+				} else {
+					jobDead = true
+					break
+				}
+			}
 		}
+		time.Sleep(time.Second * 1)
 	}
+	gologger.Info().Msgf("%s HIT ON: %s", gayBombColor, sessionObj.TunnelPeer)
+	// }()
 	r.options.Progress.IncrementRequests()
+	r.options.Progress.IncrementMatched()
 	r.options.Output.Request(r.options.TemplateID, input, "msfrpc", err)
-	gologger.Verbose().Msgf("SESSION CREATED: %d", sessionId)
 	outputEvent := r.responseToDSLMap(input, input)
 	outputEvent["ip"] = input
 	for k, v := range previous {
@@ -73,6 +117,5 @@ func (r *Request) ExecuteWithResults(input string, metadata, previous output.Int
 	// 	}
 	// }
 	callback(event)
-	r.options.Progress.IncrementMatched()
 	return nil
 }
